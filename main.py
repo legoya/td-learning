@@ -193,14 +193,14 @@ class HumanAgent(Agent):
 
 class ValueLearningAgent(LearningAgent):
 
-    def __init__(self, player, learning_rate, explore_rate, discount_factor):
+    def __init__(self, player, learning_rate, explore_rate, discount_factor, state_value_file=None):
         super().__init__(player)
 
         self.learning_rate = learning_rate
         self.explore_rate = explore_rate
         self.discount_factor = discount_factor
 
-        self.state_values = ValueLearningAgent.load_state_values()
+        self.state_values = ValueLearningAgent.load_state_values(state_value_file)
 
     def select_move(self, current_board_state, possible_moves):
         if random.random() < self.explore_rate:
@@ -211,7 +211,7 @@ class ValueLearningAgent(LearningAgent):
 
         for (row, column) in possible_moves:
             next_state = current_board_state.calculate_state_after_move(self.player, row, column)
-            next_state_value = self.state_values.get(hash(next_state), 0)
+            next_state_value = self.state_values.get(hash(next_state), 0) * self.player
 
             if next_state_value > selected_value:
                 selected_value = next_state_value
@@ -224,7 +224,7 @@ class ValueLearningAgent(LearningAgent):
         return selected_move
 
     def learn_from_result(self, states, result):
-        reward = self.determine_reward(result)
+        reward = ValueLearningAgent.determine_reward(result)
 
         for state in states[::-1]:
             if state not in self.state_values:
@@ -233,19 +233,23 @@ class ValueLearningAgent(LearningAgent):
             self.state_values[state] += self.learning_rate * (self.discount_factor * reward - self.state_values[state])
             reward = self.state_values[state]
 
-    def determine_reward(self, result):
+    @staticmethod
+    def determine_reward(result):
         if result == GameResult.DRAW:
             return 0
 
-        if self.player == 1 and result == GameResult.WINNER_1 or self.player == -1 and result == GameResult.WINNER_2:
+        if result == GameResult.WINNER_1:
             return 1
 
         return -1
 
     @staticmethod
-    def load_state_values():
+    def load_state_values(file_name):
+        if not file_name:
+            return {}
+
         try:
-            with open("state_values.pkl", "rb") as f:
+            with open(file_name, "rb") as f:
                 previous_computed_state_values = pickle.load(f)
                 return previous_computed_state_values
         except FileNotFoundError:
@@ -322,7 +326,10 @@ class Trainer:
             game = Game(self.agent_1, self.agent_2)
             game.play()
 
-            self.agent_1.learn_from_result(game.game_states, game.game_result)
+            if isinstance(self.agent_1, LearningAgent):
+                self.agent_1.learn_from_result(game.game_states, game.game_result)
+            if isinstance(self.agent_2, LearningAgent):
+                self.agent_2.learn_from_result(game.game_states, game.game_result)
 
             n_games_played += 1
             if game.game_result == GameResult.WINNER_1:
@@ -346,7 +353,9 @@ class Trainer:
 
 
 if __name__ == '__main__':
-    a1 = ValueLearningAgent(player=1, explore_rate=0.0, learning_rate=0.15, discount_factor=0.9)
+    a1 = ValueLearningAgent(player=1, explore_rate=0.01, learning_rate=0.10, discount_factor=0.9, state_value_file='state_values.pkl')
+    # a1 = HumanAgent(player=1)
+    # a2 = ValueLearningAgent(player=-1, explore_rate=0.01, learning_rate=0.4, discount_factor=0.9)
     a2 = HumanAgent(player=-1)
 
     # only took 2000 games to train with
@@ -356,4 +365,4 @@ if __name__ == '__main__':
     g.play()
 
     # t = Trainer(a1, a2)
-    # t.train(1000, 100)
+    # t.train(100, 10)
