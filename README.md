@@ -5,6 +5,6 @@ TODO
 
 fix location bug for human player
 
-re-structure repo 
-
 add input validation where needed
+
+re-factor methods to standardise private and static
