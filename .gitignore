@@ -130,6 +130,6 @@ dmypy.json
 
 # PyCharm
 .idea/*
-g
+
 # Pickle files
 *.pkl
