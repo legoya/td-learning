@@ -4,13 +4,13 @@ from Game import Game
 
 
 if __name__ == '__main__':
-    # takes ~2000 games to train with explore_rate=0.2, learning_rate=0.4, discount_factor=0.9
-    a1 = ValueLearningAgent(player=1, explore_rate=0.0, learning_rate=0.1, discount_factor=0.9, state_value_file='state_values.pkl')
-    a2 = ValueLearningAgent(player=-1, explore_rate=0.1, learning_rate=0.4, discount_factor=0.9)
-    t = Trainer.train(1_000, a1, a2)
+    auto_1 = ValueLearningAgent(player=1, explore_rate=0.2, learning_rate=0.4, discount_factor=0.9)
+    auto_2 = ValueLearningAgent(player=-1, explore_rate=0.2, learning_rate=0.4, discount_factor=0.9)
+    t = Trainer.train(10_000, auto_1, auto_2)
 
-    # a2 = HumanAgent(player=-1)
+    human_1 = HumanAgent(player=1)
+    trained_2 = ValueLearningAgent(player=-1, explore_rate=0, learning_rate=0.1, discount_factor=0.9, state_value_file='state_values.pkl')
 
-    # g = Game(a1, a2, debug=True)
-    # g.play()
+    g = Game(human_1, trained_2, debug=True)
+    g.play()
 

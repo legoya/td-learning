@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import os
 import pickle
 import random
 
@@ -117,8 +118,11 @@ class ValueLearningAgent(LearningAgent):
         if not file_name:
             return {}
 
+        file_path = os.path.dirname(__file__) + '/state_values.pkl'
+
         try:
-            with open(file_name, "rb") as f:
+            with open(file_path, "rb") as f:
+                print('Using pre-trained knowledge')
                 previous_computed_state_values = pickle.load(f)
                 return previous_computed_state_values
         except FileNotFoundError:
