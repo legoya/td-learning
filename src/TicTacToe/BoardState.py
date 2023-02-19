@@ -1,7 +1,9 @@
 class BoardState:
 
     def __init__(self, size):
-        # TODO: assert SIZE must >= 3  <- just need a config validation
+        if size >= 3:
+            ValueError(f'Supplied board size {size} is too small, must be >=3.')
+
         self.size = size
 
         self.row_score = [0] * size

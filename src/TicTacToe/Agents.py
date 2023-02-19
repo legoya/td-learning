@@ -3,11 +3,15 @@ import pickle
 import random
 
 from GameResult import GameResult
+from Board import Board
 
 
 class Agent:
 
     def __init__(self, player):
+        if player != 1 or player != -1:
+            ValueError(f'Supplied player indicator {player} is not valid. Player indicator must be 1 or -1')
+
         self.player = player
 
     @abstractmethod
@@ -55,7 +59,7 @@ class HumanAgent(Agent):
 
         if (selected_row, selected_column) not in possible_moves:
             print(f'Selected location {(selected_row+1, selected_column+1)} not available. The square must be on the board and not already occupied')
-            self.select_move(current_board_state, possible_moves)
+            return self.select_move(current_board_state, possible_moves)
 
         return selected_row, selected_column
 
@@ -85,10 +89,6 @@ class ValueLearningAgent(LearningAgent):
             if next_state_value > selected_value:
                 selected_value = next_state_value
                 selected_move = (row, column)
-
-        if not selected_move:
-            # throw error
-            pass
 
         return selected_move
 

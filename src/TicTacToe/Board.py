@@ -10,7 +10,6 @@ class Board:
     SIZE = 3
 
     def __init__(self):
-        # TODO: assert SIZE must >= 3
         self.available_moves = set([(r, c) for r in range(Board.SIZE) for c in range(Board.SIZE)])
         self.state = BoardState(Board.SIZE)
         self.display = Display(Board.SIZE)
@@ -24,7 +23,6 @@ class Board:
         return state_copy
 
     def make_move(self, player, row, column):
-        # TODO: assert player must equal 1 or -1
         self.available_moves.remove((row, column))  # will error if the move isn't possible
         self.state.update(player, row, column)
         self.display.add_move_marker(player, row, column)

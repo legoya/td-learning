@@ -7,7 +7,6 @@ class Display:
     PLAYER_2_MARKER = "O"
 
     def __init__(self, size):
-        # TODO: test if this works on size > 3
         self.size = size
         self.total_row_width = Display.CELL_WIDTH * self.size + (self.size-1) * len(Display.VERTICAL_DIVIDER)
 

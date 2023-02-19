@@ -1,45 +1,71 @@
 import pickle
 
-from Agents import LearningAgent
+from Agents import LearningAgent, ValueLearningAgent
 from GameResult import GameResult
 from Game import Game
 
 
 class Trainer:
 
-    def __init__(self, agent_1, agent_2):
-        self.agent_1 = agent_1
-        self.agent_2 = agent_2
+    @staticmethod
+    def train(n_games, agent_1, agent_2):
+        if not isinstance(agent_1, LearningAgent) and not isinstance(agent_2, LearningAgent):
+            print(f'Supply at least one Learning Agent to the Trainer.')
+            return
 
-    def train(self, n_games, batch_size):
-        n_agent_1_wins_batch = 0
-        n_agent_1_draws_batch = 0
+        print(f'Training on {n_games} games')
+        game_results = []
 
         for n_games_played in range(n_games):
-            game = Game(self.agent_1, self.agent_2)
+            game = Game(agent_1, agent_2)
             game.play()
 
-            if isinstance(self.agent_1, LearningAgent):
-                self.agent_1.learn_from_result(game.game_states, game.game_result)
-            if isinstance(self.agent_2, LearningAgent):
-                self.agent_2.learn_from_result(game.game_states, game.game_result)
+            if isinstance(agent_1, LearningAgent):
+                agent_1.learn_from_result(game.game_states, game.game_result)
+            if isinstance(agent_2, LearningAgent):
+                agent_2.learn_from_result(game.game_states, game.game_result)
 
-            n_games_played += 1
-            if game.game_result == GameResult.WINNER_1:
-                n_agent_1_wins_batch += 1
-            if game.game_result == GameResult.DRAW:
-                n_agent_1_draws_batch += 1
+            if n_games / (n_games_played+1) % 10 == 0:
+                print(f'Training {round((n_games_played / n_games), 0)}% complete')
 
-            if n_games_played % batch_size == 0:
-                print(f'Game {n_games_played} - Win rate {round((n_agent_1_wins_batch / batch_size) * 100, 3)}% | Draw rate {round((n_agent_1_draws_batch / batch_size) * 100, 3)}%')
-                n_agent_1_wins_batch = 0
-                n_agent_1_draws_batch = 0
-
-        Trainer.save_agent_states_values(self.agent_1)
+        Trainer.save_learned_values(agent_1, agent_2)
+        Trainer.training_stats(game_results, n_games)
 
     @staticmethod
-    def save_agent_states_values(agent):
+    def training_stats(results, n_games):
+        pass
+
+    @staticmethod
+    def save_learned_values(agent_1, agent_2):
+        if not isinstance(agent_1, LearningAgent) and not isinstance(agent_2, LearningAgent):
+            return
+
+        if isinstance(agent_1, ValueLearningAgent) and isinstance(agent_2, ValueLearningAgent):
+            combined_learning = {}
+            for key in agent_1.state_values.keys():
+                if key in agent_2.state_values:
+                    combined_learning[key] = (agent_1.state_values[key] + agent_2.state_values[key]) / 2
+                else:
+                    combined_learning[key] = agent_1.state_values[key]
+
+            for key in agent_2.state_values.keys():
+                if key not in agent_1.state_values:
+                    combined_learning[key] = agent_2.state_values[key]
+
+            Trainer.save_agent_states_values(combined_learning)
+            return
+
+        if isinstance(agent_1, ValueLearningAgent):
+            Trainer.save_agent_states_values(agent_1.state_values)
+            return
+
+        if isinstance(agent_2, ValueLearningAgent):
+            Trainer.save_agent_states_values(agent_2.state_values)
+            return
+
+    @staticmethod
+    def save_agent_states_values(state_values):
         filename = 'state_values.pkl'
 
         with open(filename, 'wb') as file:
-            pickle.dump(agent.state_values, file)
+            pickle.dump(state_values, file)
