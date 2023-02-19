@@ -17,5 +17,5 @@ The **TicTacToe** agent uses a **state-value function** which is effective becau
 The entire program is writen in **python3** and only using base libraries.
 
 ### Connect Four
-Not yet implemented - a 6*7 board with ~42! states
+Not yet implemented - a 6*7 board has ~4.5 x 10^13! states
 
